@@ -31,14 +31,9 @@ class Option:
         dMinus /= (self.sigma*np.sqrt(self.T-self.t))
         return dMinus
 
-#    def calculate_N(x):
-#        output = 1 + special.erf(x/np.sqrt(2))
-#        return (0.5*output)
-
     def get_callprice(self):
         dPlus = self.calculate_dPlus()
         dMinus = self.calculate_dMinus()
-        o1 = 0.5*(1 + special.erf(dPlus/np.sqrt(2)))
         output = self.S*calculate_N(dPlus)
         output -= self.K*np.exp(-self.r*(self.T-self.t))*calculate_N(dMinus)
         return output
@@ -49,6 +44,11 @@ class Option:
         output = self.K*np.exp(-self.r*(self.T-self.t))*calculate_N(-dMinus)
         output -= self.S*calculate_N(-dPlus)
         return output
+
+    def get_delta(self):
+        dPlus = self.calculate_dPlus()
+        output = calculate_N(dPlus)
+        return output 
 
     def __repr__(self) -> str:
         return f"C({self.t};{self.K},{self.T})"
