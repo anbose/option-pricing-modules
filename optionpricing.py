@@ -6,7 +6,7 @@ def calculate_N(x):
     return (0.5*output)
 
 class Option:
-    all = []
+#    all = []
     
     def __init__(self,S:float,t:float,K:float,T:float,sigma:float,r:float) -> None:
 
@@ -21,6 +21,7 @@ class Option:
         self.sigma = sigma
         self.r = r
 
+    @property
     def calculate_dPlus(self):
         dPlus = np.log(self.S/self.K) + (self.r + (0.5*self.sigma**2))*(self.T-self.t)
         dPlus /= (self.sigma*np.sqrt(self.T-self.t))
@@ -31,20 +32,10 @@ class Option:
         dMinus /= (self.sigma*np.sqrt(self.T-self.t))
         return dMinus
 
-    def get_callprice(self):
-        dPlus = self.calculate_dPlus()
-        dMinus = self.calculate_dMinus()
-        output = self.S*calculate_N(dPlus)
-        output -= self.K*np.exp(-self.r*(self.T-self.t))*calculate_N(dMinus)
-        return output
+    def price(self): pass
 
-    def get_putprice(self):
-        dPlus = self.calculate_dPlus()
-        dMinus = self.calculate_dMinus()
-        output = self.K*np.exp(-self.r*(self.T-self.t))*calculate_N(-dMinus)
-        output -= self.S*calculate_N(-dPlus)
-        return output
-
+    def delta(self): pass
+    
     def get_delta(self):
         dPlus = self.calculate_dPlus()
         output = calculate_N(dPlus)
@@ -52,3 +43,25 @@ class Option:
 
     def __repr__(self) -> str:
         return f"C({self.t};{self.K},{self.T})"
+
+class Call(Option):
+    def __init__(self,S:float,t:float,K:float,T:float,sigma:float,r:float) -> None:
+        super().__init__(S,t,K,T,sigma,r)
+
+    def price(self):
+        dPlus = self.calculate_dPlus()
+        dMinus = self.calculate_dMinus()
+        output = self.S*calculate_N(dPlus)
+        output -= self.K*np.exp(-self.r*(self.T-self.t))*calculate_N(dMinus)
+        return output
+
+class Put(Option):
+    def __init__(self,S:float,t:float,K:float,T:float,sigma:float,r:float) -> None:
+        super().__init__(S,t,K,T,sigma,r)
+
+    def price(self):
+        dPlus = self.calculate_dPlus()
+        dMinus = self.calculate_dMinus()
+        output = self.K*np.exp(-self.r*(self.T-self.t))*calculate_N(-dMinus)
+        output -= self.S*calculate_N(-dPlus)
+        return output
