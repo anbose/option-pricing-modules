@@ -1,5 +1,10 @@
 import numpy as np
 from scipy import special
+import matplotlib.pyplot as plt
+#plt.rcParams['text.usetex'] = True
+#plt.rcParams['font.family'] = 'serif'
+#plt.rcParams['font.serif'] = ['Computer Modern']
+
 
 def calculate_N(x):
     output = 1 + special.erf(x/np.sqrt(2))
@@ -86,6 +91,21 @@ class Option:
             option_prices.append(price)
 
         return option_prices
+
+    def plot_greek(self,parameter_name,parameter_range):
+        ydata = self.calculate_option_prices_for_parameters(parameter_name,parameter_range)
+        xdata = parameter_range
+        x_name = ''
+        for variable_name in parameter_name.split('_'):
+            x_name += variable_name + ' '
+
+        fig,ax = plt.subplots(1,1,figsize=(6,4))
+        ax.set_title('price vs ' + x_name,fontsize=16)
+        ax.plot(xdata,ydata,'o',markersize=3)
+        ax.set_xlabel(x_name,fontsize=16)
+        ax.set_ylabel('price',fontsize=16)
+        plt.tight_layout()
+        plt.show()
 
     def __repr__(self) -> str:
         return f"C({self.t};{self.K},{self.T})"
