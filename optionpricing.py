@@ -16,7 +16,6 @@ class Option:
     def __init__(self,S:float,t:float,K:float,T:float,sigma:float,r:float) -> None:
 
         assert t >= 0, "current time (t) can not be negative"
-        assert T >= 0, "maturity time (T) can not be negative"
         assert T > t, "maturity time (T) must be greater than current time (t)"
         assert r >= 0, "risk free rate (r) can not be negative"
         assert sigma >= 0, "Volatility (sigma) can not be negative"
@@ -101,13 +100,41 @@ class Option:
         xdata = parameter_range
         parameter_label = ' '.join(parameter_name.split('_'))
 
-        fig,ax = plt.subplots(1,1,figsize=(6,4))
+        fig,ax = plt.subplots(1,1,figsize=(10,6))
         ax.set_title('price vs ' + parameter_label,fontsize=16)
         ax.plot(xdata,ydata,'o',markersize=3)
         ax.set_xlabel(parameter_label,fontsize=16)
-        ax.set_ylabel('Price',fontsize=16)
+        ax.set_ylabel('Option Price',fontsize=16)
+        ax.grid(True)
         plt.tight_layout()
         plt.show()
+
+    def plot_with_silders(self,*args):
+        primary_parameter = args[0]
+        primary_data = args[1]
+        secondary_params = {}
+        for param_id in range(2,len(args),2):
+            param_name = args[param_id]
+            param_data = args[param_id+1]
+            secondary_params[param_name] = param_data
+        
+        fig,ax = plt.subplots(figsize=(10,6))
+        plt.subplots_adjust(left=0.25,bottom=0.25)
+        price_data = self.calculate_option_prices_for_parameters(primary_parameter,primary_data)
+        line, = ax.plot(primary_data,price_data)
+        ax.set_xlabel(' '.join(primary_parameter.split('_'),fontsize=16)
+        ax.set_ylabel('Option Price',fontsize=16)
+        ax.grid(True)
+
+        silder_params = list(secondary_params.keys())
+        for slider_id in range(len(secondary_params)):
+            silder_ax = fig.add_axes([0.25,0.1-i*0.05,0.65,0.03])      # [left, bottom, width, height]
+            slider_label = ' '.join(silder_params[i].split('_'))
+            slider_range = secondary_params[slider_params[i]]
+            slider_data = Slider(ax=slider_ax,label=slider_label,valmin=slider_range.min(),valmax=slider_range.max(),valinit=slider_range[0])
+
+        
+        
 
     def __repr__(self) -> str:
         return f"C({self.t};{self.K},{self.T})"
