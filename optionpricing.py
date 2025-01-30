@@ -43,13 +43,69 @@ class Option:
         dMinus /= (self.sigma*np.sqrt(time_diff))
         return dMinus
 
-    def delta(self):
+    def Delta(self):
         if self.name == 'Call':
             return calculate_N(self.calculate_dPlus())
         elif self.name == 'Put':
             return -calculate_N(-self.calculate_dPlus())
         else:
             raise ValueError('Option type not mentioned')
+
+    def Gamma(self):
+        dPlus = self.calculate_dPlus()
+        Nprime = np.exp(-0.5*(dPlus**2)) / (np.sqrt(2*np.pi))
+        time_diff = self.T - self.t
+        return (Nprime / (self.S * self.sigma * np.sqrt(time_diff)))
+
+    def Vega(self):
+        dPlus = self.calculate_dPlus()
+        Nprime = np.exp(-0.5*(dPlus**2)) / (np.sqrt(2*np.pi))
+        time_diff = self.T - self.t
+        output = self.S * Nprime * np.sqrt(time_diff)
+        return output
+
+    def Theta(self):
+        dPlus = self.calculate_dPlus()
+        dMinus = self.calculate_dMinus()
+        Nprime = np.exp(-0.5*(dPlus**2)) / (np.sqrt(2*np.pi))
+        time_diff = self.T - self.t
+        output_part1 = - (self.S * Nprime * self.sigma) / (2 * np.sqrt(time_diff))
+        if self.name == 'Call':
+            output_part2 = self.r * self.K * calculate_N(dMinus) * np.exp(-self.r * time_diff)
+            output = output_part1 - output_part2
+        elif self.name == 'Put':
+            output_part2 = self.r * self.K * calculate_N(-dMinus) * np.exp(-self.r * time_diff)
+            output = output_part1 + output_part2
+        else:
+            raise ValueError('Option type not mentioned')
+
+        return output
+   
+    def Rho(self):
+        dMinus = self.calculate_dMinus()
+        time_diff = self.T - self.t
+        if self.name == 'Call':
+            output = self.K * time_diff * np.exp(-self.r * time_diff) * calculate_N(dMinus)
+        elif self.name == 'Put':
+            output = - self.K * time_diff * np.exp(-self.r * time_diff) * calculate_N(-dMinus)
+        else:
+            raise ValueError('Option type not mentioned')
+
+        return output
+
+    greek_dict = {
+        'Delta' : lambda option : option.Delta(),
+        'Gamma' : lambda option : option.Gamma(),
+        'Vega' : lambda option : option.Vega(),
+        'Theta' : lambda option : option.Theta(),
+        'Rho' : lambda option : option.Rho(),
+    }
+
+    def calculate_greek(self,greek_name):
+        if greek_name in self.greek_dict:
+            return (self.greek_dict[greek_name](self))
+        else:
+            raise ValueError('incorrect option greek. Possible greeks are "Delta", "Gamma", "Vega", "Theta" and "Rho"')
     
     def price(self):
         dPlus = self.calculate_dPlus()
@@ -60,14 +116,13 @@ class Option:
             output = self.S * calculate_N(dPlus)
             output -= self.K * np.exp(-self.r * time_diff) * calculate_N(dMinus)
         elif self.name == 'Put':
-            output = self.K * np.exp(-self.r* time_diff) * calculate_N(-dMinus)
+            output = self.K * np.exp(-self.r * time_diff) * calculate_N(-dMinus)
             output -= self.S * calculate_N(-dPlus)
         else:
             raise ValueError('Option type not mentioned')
         
         return output
             
-
     def calculate_option_prices_for_parameters(self,parameter_name,parameter_range):
         option_prices = []
         
@@ -96,7 +151,7 @@ class Option:
 
         return option_prices
 
-    def plot_greek(self,parameter_name,parameter_range):
+    def plot_price(self,parameter_name,parameter_range):
         ydata = self.calculate_option_prices_for_parameters(parameter_name,parameter_range)
         xdata = parameter_range
         parameter_label = ' '.join(parameter_name.split('_'))
@@ -110,7 +165,7 @@ class Option:
         plt.tight_layout()
         plt.show()
 
-    def plot_with_silders(self,*args):
+    def plot_price_with_silders(self,*args):
         primary_parameter = args[0]
         primary_data = args[1]
         secondary_params = {}
@@ -170,7 +225,52 @@ class Option:
         reset_button.on_clicked(reset)
 
         plt.show()
+
+    def plot_greek(self,greek_name,param_name,param_data):
+        greeks = []
+
+        option_copy = copy.deepcopy(self)
+        param_setter = {
+            'underlying_price': lambda option,val : setattr(option, 'S', val),
+            'time': lambda option,val : setattr(option, 't', val),
+            'strike_price': lambda option,val : setattr(option, 'K', val),
+            'maturity_time': lambda option,val : setattr(option, 'T', val),
+            'volatility': lambda option,val : setattr(option, 'sigma', val),
+            'interest_rate': lambda option,val : setattr(option, 'r', val)
+        }
+
+        if param_name in param_setter:
+            for param in param_data:
+                param_setter[param_name](option_copy,param)
+                greek_value = option_copy.calculate_greek(greek_name)
+                greeks.append(greek_value)
+        else:
+            raise ValueError('Invalid parameter name. Possible parameter names are  "underlying_price" : S, "time" : t, "strike_price" : K, "maturity_time" : T, "volatility" : sigma, "interest_rate" : r')
         
+        fig,ax = plt.subplots(figsize=(10,6))
+        plt.plot(param_data,greeks,'o',markersize=3)
+ 
+        param_label = ' '.join(param_name.split('_'))
+        ax.set_title(f'Option Greek {greek_name} vs {param_label}')
+        ax.set_xlabel(param_label)
+        ax.set_ylabel(greek_name)
+        ax.grid(True)
+        plt.tight_layout()
+        plt.show()
+
+    def implied_volatility(self,p0,v0):
+        option_copy = copy.deepcopy(self)
+        
+        assert v0 > 0, "volatility can not be negative"
+        
+        while True:
+            setattr(option_copy,'sigma',v0)
+            fx = option_copy.price() - p0
+            v_next = option_copy.sigma - (fx/option_copy.Vega())
+            if (abs(v_next - v0) < 1e-6):
+                break
+            v0 = v_next
+        return v0
 
     def __repr__(self) -> str:
         return f"C({self.t};{self.K},{self.T})"
