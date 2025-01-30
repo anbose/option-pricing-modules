@@ -7,14 +7,48 @@ from matplotlib.widgets import Button, Slider
 #plt.rcParams['font.family'] = 'serif'
 #plt.rcParams['font.serif'] = ['Computer Modern']
 
+"""
+    A Python module to compute price, greeks and volatility of a European option using Black-Scholes model.
+
+    Author: Aritra Bose
+
+"""
 
 def calculate_N(x):
+
+    """
+    Calculates the cumulative distribution function (CDF) of the standard normal distribution.
+
+    Args:
+        x: The value at which to evaluate the CDF
+
+    Returns:
+        The CDF value at x.
+    """
+
     output = 1 + special.erf(x/np.sqrt(2))
     return (0.5*output)
 
 class Option:
-    
+
+    """
+    Represents an option class and provides methods to calculate its price and Greeks
+    using the Black-Scholes model.
+    """
+
     def __init__(self,S:float,t:float,K:float,T:float,sigma:float,r:float) -> None:
+
+        """
+        Initializes the Option object.
+
+        Args:
+            S: Current price of the underlying asset.
+            t: Current time (in years).
+            K: Strike price of the option.
+            T: Time to maturity of the option (in years).
+            sigma: Volatility of the underlying asset.
+            r: Risk-free interest rate.
+        """
 
         assert t >= 0, "current time (t) can not be negative"
         assert T > t, "maturity time (T) must be greater than current time (t)"
@@ -30,6 +64,9 @@ class Option:
         self.name = 'option'
 
     def calculate_dPlus(self):
+
+        """ Calculates d+ for the Black-Scholes formula. """
+
         log_term = np.log(self.S/self.K)
         time_diff = self.T - self.t
         dPlus = log_term + (self.r + (0.5*self.sigma**2))*time_diff
@@ -37,6 +74,9 @@ class Option:
         return dPlus
 
     def calculate_dMinus(self):
+
+        """ Calculates d- for the Black-Scholes formula. """
+
         log_term = np.log(self.S/self.K)
         time_diff = self.T - self.t
         dMinus = log_term + (self.r - (0.5*self.sigma**2))*time_diff
@@ -44,6 +84,9 @@ class Option:
         return dMinus
 
     def Delta(self):
+
+        """ Calculates the option greek Delta of the option. """
+
         if self.name == 'Call':
             return calculate_N(self.calculate_dPlus())
         elif self.name == 'Put':
@@ -52,12 +95,18 @@ class Option:
             raise ValueError('Option type not mentioned')
 
     def Gamma(self):
+
+        """ Calculates the option greek Gamma of the option. """
+
         dPlus = self.calculate_dPlus()
         Nprime = np.exp(-0.5*(dPlus**2)) / (np.sqrt(2*np.pi))
         time_diff = self.T - self.t
         return (Nprime / (self.S * self.sigma * np.sqrt(time_diff)))
 
     def Vega(self):
+
+        """ Calculates the option greek Vega of the option. """
+
         dPlus = self.calculate_dPlus()
         Nprime = np.exp(-0.5*(dPlus**2)) / (np.sqrt(2*np.pi))
         time_diff = self.T - self.t
@@ -65,6 +114,9 @@ class Option:
         return output
 
     def Theta(self):
+
+        """ Calculates the option greek Theta of the option. """
+
         dPlus = self.calculate_dPlus()
         dMinus = self.calculate_dMinus()
         Nprime = np.exp(-0.5*(dPlus**2)) / (np.sqrt(2*np.pi))
@@ -82,6 +134,9 @@ class Option:
         return output
    
     def Rho(self):
+
+        """ Calculates the option greek Rho of the option. """
+
         dMinus = self.calculate_dMinus()
         time_diff = self.T - self.t
         if self.name == 'Call':
@@ -93,6 +148,7 @@ class Option:
 
         return output
 
+    """ Dictionary to call the correponding option greek functions. """
     greek_dict = {
         'Delta' : lambda option : option.Delta(),
         'Gamma' : lambda option : option.Gamma(),
@@ -102,12 +158,29 @@ class Option:
     }
 
     def calculate_greek(self,greek_name):
+
+        """ 
+        General method for calculating greeks of the option.
+
+        Args:
+            greek_name: Name of the option greek to be calculated.
+
+        Returns:
+            The value of the option greek.
+        """
+
         if greek_name in self.greek_dict:
             return (self.greek_dict[greek_name](self))
         else:
             raise ValueError('incorrect option greek. Possible greeks are "Delta", "Gamma", "Vega", "Theta" and "Rho"')
     
     def price(self):
+
+        """
+        Calculates the price of the option using the Black-Scholes formula.
+        
+        """
+
         dPlus = self.calculate_dPlus()
         dMinus = self.calculate_dMinus()
         time_diff = self.T - self.t
@@ -124,6 +197,18 @@ class Option:
         return output
             
     def calculate_option_prices_for_parameters(self,parameter_name,parameter_range):
+
+        """
+        Calculates option prices for a range of values of a given parameter.
+
+        Args:
+            parameter_name: The name of the parameter to vary.
+            parameter_range: A list or numpy array of parameter values.
+
+        Returns:
+            A list of option prices corresponding to the parameter values.
+        """
+
         option_prices = []
         
         option_copy = copy.deepcopy(self)
@@ -152,6 +237,15 @@ class Option:
         return option_prices
 
     def plot_price(self,parameter_name,parameter_range):
+
+        """
+        Plots the option price against a range of values for a given parameter.
+
+        Args:
+            parameter_name: The name of the parameter to vary.
+            parameter_range: A list or numpy array of parameter values.
+        """
+
         ydata = self.calculate_option_prices_for_parameters(parameter_name,parameter_range)
         xdata = parameter_range
         parameter_label = ' '.join(parameter_name.split('_'))
@@ -166,6 +260,21 @@ class Option:
         plt.show()
 
     def plot_price_with_silders(self,*args):
+
+        """
+        Creates an interactive plot of the option price against a range of values for a primary parameter 
+        and additional sliders to vary the secondary parameters to observe the change to the plot at real time.
+
+        Args:
+            format : parameter_name, parameter_data, parameter_name, parameter_data, ...
+            parameter_name: The name of the parameter to vary.
+            parameter_range: A list or numpy array of parameter values.
+
+        The first parameter is considered as the primary parameter, which is followed by the list of its values.
+        The next parameters are considered as secondary and used to create sliders.
+
+        """
+
         primary_parameter = args[0]
         primary_data = args[1]
         secondary_params = {}
@@ -182,7 +291,8 @@ class Option:
             'volatility': lambda option,val : setattr(option, 'sigma', val),
             'interest_rate': lambda option,val : setattr(option, 'r', val)
         }
-        
+
+        """ Initial plot of the option price against the primary parameter. """   
         fig,ax = plt.subplots(figsize=(10,6))
         plt.subplots_adjust(left=0.25,bottom=0.25)
         price_data = self.calculate_option_prices_for_parameters(primary_parameter,primary_data)
@@ -192,7 +302,8 @@ class Option:
         ax.grid(True)
 
         slider_params = list(secondary_params.keys())
-        slider_dict = {}
+        slider_dict = {} 
+
         for slider_id in range(len(secondary_params)):
             slider_ax = fig.add_axes([0.25,0.12-slider_id*0.05,0.65,0.03])      # [left, bottom, width, height]
             slider_label = ' '.join(slider_params[slider_id].split('_'))
@@ -201,7 +312,11 @@ class Option:
                                                             label=slider_label,valmin=slider_range.min(),
                                                                 valmax=slider_range.max(),valinit=slider_range[0])
         current_params = {}
+
         def update(val):
+
+            """ function to update the plot when called. """
+
             option_copy = copy.deepcopy(self)
             for params in slider_dict:
                 param_setter[params](option_copy,slider_dict[params].val)
@@ -216,17 +331,33 @@ class Option:
         for params in slider_dict:
             slider_dict[params].on_changed(update)
 
+        """ Reset button to reset the plots to initial values of all parameters. """
+
         reset_ax = fig.add_axes([0.1,0.25,0.05,0.03])
         reset_button = Button(reset_ax,'Reset',color='0.85',hovercolor='0.95',useblit=True)
 
         def reset(event):
+
+            """ Function to reset the plots when called. """
+
             for params in slider_dict:
                 slider_dict[params].reset()
+
         reset_button.on_clicked(reset)
 
         plt.show()
 
     def plot_greek(self,greek_name,param_name,param_data):
+
+        """
+        Plots the option greek against a range of values for a given parameter.
+
+        Args:
+            greek_name: The option greek to compute.
+            parameter_name: The name of the parameter to vary.
+            parameter_range: A list or numpy array of parameter values.
+        """
+
         greeks = []
 
         option_copy = copy.deepcopy(self)
@@ -259,6 +390,15 @@ class Option:
         plt.show()
 
     def implied_volatility(self,p0,v0):
+
+        """
+        Calculates the implied volatility of an option using Newton-Raphson method.
+
+        Args:
+            p0: The market price of the option.
+            v0: The initial guess for the volatility of the option.
+        """
+
         option_copy = copy.deepcopy(self)
         
         assert v0 > 0, "volatility can not be negative"
@@ -276,11 +416,17 @@ class Option:
         return f"C({self.t};{self.K},{self.T})"
 
 class Call(Option):
+
+    """ Represents a European call option. """
+
     def __init__(self,S:float,t:float,K:float,T:float,sigma:float,r:float) -> None:
         super().__init__(S,t,K,T,sigma,r)
         self.name = 'Call'
 
 class Put(Option):
+
+    """ Represents a European put option. """
+
     def __init__(self,S:float,t:float,K:float,T:float,sigma:float,r:float) -> None:
         super().__init__(S,t,K,T,sigma,r)
         self.name = 'Put'
