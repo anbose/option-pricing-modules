@@ -61,7 +61,7 @@ This application allows users to input parameters for European call and put opti
     * Select the "Option Type" using the dropdown menu. 
     * **Interactive Sliders:** Above the plot, you will find sliders for the secondary option parameters (e.g., Strike Price, Volatility, Interest Rate). You can adjust these sliders in real-time to observe how the option price changes with different parameter values.
 
-## Contributing (Optional)
+## Contributing
 
 If you'd like to contribute to this project, please feel free to:
 
