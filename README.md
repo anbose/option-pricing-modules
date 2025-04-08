@@ -24,16 +24,14 @@ This application allows users to input parameters for European call and put opti
 
 1.  **Clone the repository:**
     ```bash
-    git clone <repository_url>
+    git clone https://github.com/anbose/option-pricing-modules.git
     ```
-    (Replace `<repository_url>` with the actual URL of this repository)
-
+    
 2.  **Navigate to the project directory:**
     ```bash
-    cd <repository_name>
+    cd option-pricing-module
     ```
-    (Replace `<repository_name>` with the name of the cloned repository)
-
+    
 3.  **Install dependencies:**
     It's recommended to create a virtual environment to manage dependencies. You can do this using `venv` or `conda`.
     
