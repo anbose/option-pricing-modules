@@ -60,15 +60,15 @@ primary_parameter = st.selectbox("Select Primary Parameter to Plot", ["Underlyin
 col1, col2, col3 = st.columns(3)  # Create 3 columns
 
 with col1:
-    pg_i = st.number_input(f"Initial Value ({primary_parameter})", value=0.1,key=1)
+    pg_i = st.number_input(f"Initial Value ({primary_parameter})", value=0.,key=1)
 
 with col2:
-    pg_f = st.number_input(f"Final Value ({primary_parameter})", value=1.0,key=2)
+    pg_f = st.number_input(f"Final Value ({primary_parameter})", value=100.0,key=2)
 
 #d_pg = 0.1 if pg_f >= 0.1 else 0.01
 
 with col3:
-    d_pg = st.number_input(f"Step Value ({primary_parameter})", value=0.1,key=3)
+    d_pg = st.number_input(f"Step Value ({primary_parameter})", value=1.,key=3)
 
 primary_data = np.arange(pg_i,pg_f,0.1)
 
