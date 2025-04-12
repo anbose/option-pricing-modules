@@ -77,7 +77,7 @@ primary_data = np.arange(pg_i,pg_f,0.1)
 
 secondary_params = {
     'underlying_price' : {'label': 'Underlying Price', 'min': 0.1, 'max': 10000., 'value': 1000.0},
-    'time': {'label': 'Time to Maturity (Years)', 'min': 0.1, 'max': 5.0, 'value': 1.0},
+    'maturity_time': {'label': 'Time to Maturity (Years)', 'min': 0.1, 'max': 5.0, 'value': 1.0},
     'strike_price': {'label': 'Strike Price', 'min': 500., 'max': 10000., 'value': 1100.0},
     'volatility': {'label': 'Volatility', 'min': 0.2, 'max': 0.6, 'value': 0.3},
     'interest_rate': {'label': 'Risk-free Interest Rate', 'min': 0.02, 'max': 0.2, 'value': 0.03},
