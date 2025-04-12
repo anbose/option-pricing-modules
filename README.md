@@ -1,6 +1,8 @@
 # European Option Pricing and Greeks Web Application
 
-This repository contains a Python web application built using Streamlit to calculate European option prices based on the Black-Scholes formula and visualize various option Greeks interactively.
+This repository contains a Python web application built using Streamlit to calculate European option prices based on the Black-Scholes formula and visualize the effect of various parameters on the option price interactively.
+
+**Try the live application here: (https://option-pricing-modules-anbose.streamlit.app/)**
 
 ## Overview
 
@@ -34,7 +36,10 @@ This application allows users to input parameters for European call and put opti
     
 3.  **Install dependencies:**
     It's recommended to create a virtual environment to manage dependencies. You can do this using `venv` or `conda`.
-    
+    Once your virtual environment is activated, install the required packages:
+    ```bash
+    pip install -r requirements.txt
+    ```
 
 ## How to Run
 
