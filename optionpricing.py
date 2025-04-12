@@ -1,6 +1,8 @@
 import numpy as np
 from scipy import special
 import matplotlib.pyplot as plt
+import seaborn as sns
+import plotly.express as px
 import copy
 from matplotlib.widgets import Button, Slider
 #plt.rcParams['text.usetex'] = True
@@ -347,6 +349,51 @@ class Option:
 
         plt.show()
 
+    def plot_price_with_streamlit_sliders(self,primary_parameter,primary_data,secondary_params_values):
+        
+        """
+        Creates a plot of the option price against a primary parameter, using provided values for secondary parameters.
+        
+        Returns: figure object for streamlit plots with sliders
+        """
+        option_copy = copy.deepcopy(self)
+
+        param_setter = {
+            'underlying_price': 'S',
+            'strike_price': 'K',
+            'maturity_time': 'T',
+            'volatility': 'sigma',
+            'interest_rate': 'r'
+        }
+
+        param_labels = {
+            'underlying_price': 'Underlying Price',
+            'strike_price': 'Strike Price',
+            'maturity_time': 'Time to Maturity (Years)',
+            'volatility': 'Volatility',
+            'interest_rate': 'Risk-free Interest Rate'
+        }
+
+        # Update the option instance with the current secondary parameter values
+        for param_name, value in secondary_params_values.items():
+            if param_name in param_setter:
+                setattr(option_copy, param_setter[param_name], value)
+
+
+        price_data = option_copy.calculate_option_prices_for_parameters(primary_parameter,primary_data)
+
+        sns.set_context('notebook')
+        sns.set_theme(context='notebook',style='darkgrid',palette='deep',font='sans-serif',font_scale=1.2,color_codes=True)
+        fig,ax = plt.subplots(1,1,figsize=(10,6))
+
+        sns.lineplot(x=primary_data,y=price_data,lw=4,ax=ax)
+        ax.set_xlabel(param_labels[primary_parameter], fontsize=20)
+        ax.set_ylabel('Option Price', fontsize=20)
+        ax.grid(True)
+
+        plt.tight_layout()
+        return fig        
+
     def plot_greek(self,greek_name,param_name,param_data):
 
         """
@@ -431,3 +478,37 @@ class Put(Option):
         super().__init__(S,t,K,T,sigma,r)
         self.name = 'Put'
 
+
+
+#################################
+
+'''
+        fig = px.line(x=primary_data,y=price_data)
+        fig.update_traces(
+            texttemplate='%{y:.2f}',
+            textposition='top center',
+            #hovertemplate='Date: %{x}<br>Value: %{y:.2f}<br>',
+            marker_line_color= 'red',
+            marker_line_width=2,
+            opacity=0.8
+        )
+        fig.update_layout(
+            autosize=True,
+            #width=800,
+            #height=400,
+            #template='plotly_dark',
+            title=dict(
+                text="Price with parameters",
+                font=dict(size=24, color='#000000'),
+                x=0.3,
+                y=0.9
+            ),
+            xaxis_title=dict(text=param_labels[primary_parameter], font=dict(size=20, color='#000000')),
+            yaxis_title=dict(text='Option Price', font=dict(size=20, color='#000000')),
+            #plot_bgcolor='rgb(217, 217, 217)',
+            xaxis=dict(tickfont=dict(size=14, color='#000000')),
+            yaxis=dict(tickfont=dict(size=14, color='#000000')),
+            legend=dict(x=0.1, y=1.1, orientation='h', font=dict(color='#000000')),
+            margin=dict(l=10, r=10, t=100, b=50)
+        )
+'''
