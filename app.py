@@ -60,7 +60,7 @@ primary_parameter = st.selectbox("Select Primary Parameter to Plot", ["Underlyin
 col1, col2, col3 = st.columns(3)  # Create 3 columns
 
 with col1:
-    pg_i = st.number_input(f"Initial Value ({primary_parameter})", value=10.,key=1)
+    pg_i = st.number_input(f"Initial Value ({primary_parameter})", value=0.,key=1)
 
 with col2:
     pg_f = st.number_input(f"Final Value ({primary_parameter})", value=1000.0,key=2)
