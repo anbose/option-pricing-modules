@@ -63,7 +63,7 @@ with col1:
     pg_i = st.number_input(f"Initial Value ({primary_parameter})", value=0.,key=1)
 
 with col2:
-    pg_f = st.number_input(f"Final Value ({primary_parameter})", value=100.0,key=2)
+    pg_f = st.number_input(f"Final Value ({primary_parameter})", value=1000.0,key=2)
 
 #d_pg = 0.1 if pg_f >= 0.1 else 0.01
 
