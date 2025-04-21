@@ -68,8 +68,9 @@ class Option:
     def calculate_dPlus(self):
 
         """ Calculates d+ for the Black-Scholes formula. """
-
-        log_term = np.log(self.S/self.K)
+        
+        eps = 1.e-6
+        log_term = np.log((self.S + eps)/(self.K + eps))
         time_diff = self.T - self.t
         dPlus = log_term + (self.r + (0.5*self.sigma**2))*time_diff
         dPlus /= (self.sigma*np.sqrt(time_diff))
@@ -78,6 +79,7 @@ class Option:
     def calculate_dMinus(self):
 
         """ Calculates d- for the Black-Scholes formula. """
+        
         eps = 1.e-6
         log_term = np.log((self.S + eps)/(self.K + eps))
         time_diff = self.T - self.t
